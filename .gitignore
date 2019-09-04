@@ -1,0 +1,21 @@
+# OS generated files #
+######################
+.DS_Store*
+*~
+classes
+target
+.classpath
+.project
+.wtpmodules
+.settings
+.sonar
+.sonarlint
+.metadata
+.recommenders
+.launch
+*.cache.*
+manifests
+
++# IntelliJ Idea
+.idea/
+*.iml
