@@ -55,8 +55,8 @@ public class MainTest {
 
     @Test
     public void doIt2000000numerosAntesDo42() throws IOException, URISyntaxException {
-        final String inputString = readFixture("fixture.10000000.txt");
-        final String expectedOutputString = readFixture("fixture.10000000-output.txt");
+        final String inputString = readFixture("fixture.2000000.txt");
+        final String expectedOutputString = readFixture("fixture.2000000-output.txt");
         long start = System.currentTimeMillis();
         final String actualOutput = doIt(inputString, "\n");
         long end   = System.currentTimeMillis();
