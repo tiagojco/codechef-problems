@@ -1,6 +1,8 @@
 import java.io.InputStream;
 import java.io.PrintStream;
+import java.math.BigDecimal;
 import java.util.Scanner;
+import java.util.concurrent.ConcurrentHashMap;
 import java.util.function.BiConsumer;
 
 /**
@@ -38,8 +40,9 @@ import java.util.function.BiConsumer;
  * @see <a href="https://www.codechef.com/problems/FCTRL">FCTRL problem</a>
  *
  */
-public class Fctrl implements BiConsumer<InputStream, PrintStream> {
+class Fctrl implements BiConsumer<InputStream, PrintStream> {
 
+    private final ConcurrentHashMap<BigDecimal, BigDecimal> memo;
     private final String delimiter;
 
     public static void main(String[] args) {
@@ -52,6 +55,10 @@ public class Fctrl implements BiConsumer<InputStream, PrintStream> {
      */
     Fctrl(String delimiter) {
         this.delimiter = delimiter;
+        this.memo = new ConcurrentHashMap<>();
+
+        memo.put(BigDecimal.ZERO, BigDecimal.ONE);
+        memo.put(BigDecimal.ONE, BigDecimal.ONE);
     }
     /**
      * The actual implementation
@@ -80,5 +87,24 @@ public class Fctrl implements BiConsumer<InputStream, PrintStream> {
         if (out != System.out) {
             out.close();
         }
+    }
+
+    BigDecimal factorial(int i) {
+        return factorial(new BigDecimal(i));
+    }
+
+    BigDecimal factorial(long i) {
+        return factorial(new BigDecimal(i));
+    }
+
+    BigDecimal factorial(BigDecimal i) {
+        if (memo.contains(i)) {
+            return memo.get(i);
+        }
+
+        BigDecimal fctrl = i.multiply(factorial(i.subtract(BigDecimal.ONE)));
+        memo.put(i, fctrl);
+
+        return fctrl;
     }
 }

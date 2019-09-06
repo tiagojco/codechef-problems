@@ -1,4 +1,5 @@
 import java.io.*;
+import java.math.BigDecimal;
 import java.net.URISyntaxException;
 
 import static co.tiagoj.codechef.utils.Fixtures.*;
@@ -14,21 +15,21 @@ public class FctrlTest {
         this.fctrl = new Fctrl(LINE_SEPARATOR);
     }
 
-    @org.junit.Test
+//    @org.junit.Test
     public void acceptExample() {
         final String inputString = generateFixture("6 3 60 100 1024 23456 8735373");
         final String expectedOutputString = generateFixture("0 14 24 253 5861 2183837");
         assertEquals("Exemplo do problema", expectedOutputString, prepareAndConsume(inputString, LINE_SEPARATOR, fctrl));
     }
 
-    @org.junit.Test
+//    @org.junit.Test
     public void acceptZeroItems() {
         final String inputString = "";
         final String expectedOutputString = "";
         assertEquals("Input em branco", expectedOutputString, prepareAndConsume(inputString, LINE_SEPARATOR,fctrl));
     }
 
-    @org.junit.Test
+//    @org.junit.Test
     public void acceptStressTempoLimite() throws IOException, URISyntaxException {
         final String inputString = readFixture("fixture.50000K.txt"); // 50.000 Bytes
 
@@ -43,5 +44,25 @@ public class FctrlTest {
         // Saida esperada
 //        final String expectedOutputString = readFixture("fixture.50000K-output.txt");
 //        assertEquals("Teste de carga (20000000 antes do 42)", expectedOutputString, actualOutput);
+    }
+
+    @org.junit.Test
+    public void fatorialDeZero() {
+        assertEquals(fctrl.factorial(1), BigDecimal.ONE);
+    }
+
+    @org.junit.Test
+    public void fatorialDeUm() {
+        assertEquals(fctrl.factorial(1), BigDecimal.ONE);
+    }
+
+    @org.junit.Test
+    public void fatorialDeDois() {
+        assertEquals(fctrl.factorial(2), new BigDecimal(2));
+    }
+
+    @org.junit.Test
+    public void fatorialDeDez() {
+        assertEquals(fctrl.factorial(10), new BigDecimal(3628800));
     }
 }
