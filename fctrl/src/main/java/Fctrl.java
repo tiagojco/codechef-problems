@@ -1,8 +1,6 @@
 import java.io.InputStream;
 import java.io.PrintStream;
-import java.math.BigDecimal;
-import java.util.Scanner;
-import java.util.concurrent.ConcurrentHashMap;
+import java.util.*;
 import java.util.function.BiConsumer;
 
 /**
@@ -42,7 +40,9 @@ import java.util.function.BiConsumer;
  */
 class Fctrl implements BiConsumer<InputStream, PrintStream> {
 
-    private final ConcurrentHashMap<BigDecimal, BigDecimal> memo;
+    private int[] inputSet;
+//    private Map<Integer,Integer> inputSet = new LinkedHashMap<>();
+    private int[] cache;
     private final String delimiter;
 
     public static void main(String[] args) {
@@ -55,13 +55,13 @@ class Fctrl implements BiConsumer<InputStream, PrintStream> {
      */
     Fctrl(String delimiter) {
         this.delimiter = delimiter;
-        this.memo = new ConcurrentHashMap<>();
-
-        memo.put(BigDecimal.ZERO, BigDecimal.ONE);
-        memo.put(BigDecimal.ONE, BigDecimal.ONE);
     }
     /**
-     * The actual implementation
+     * The actual implementation. Three Loops:
+     *  - The first one fills the input set, and detect the biggestInputedNumber value;
+     *  - The second will resolve Z for the biggestInputedNumber value (and cache the intermediary results);
+     *  - The third one, will iterate through the input set to print the results ;
+     *
      * @param in Example: <pre>6 3 60 100 1024 23456 8735373</pre>
      * @param out Example: <pre>0 14 24 253 5861 2183837</pre>
      */
@@ -69,17 +69,34 @@ class Fctrl implements BiConsumer<InputStream, PrintStream> {
     public void accept(InputStream in, PrintStream out) {
         final Scanner s = new Scanner(in);
 
-        while (s.hasNextInt()) {
-            int i = s.nextInt();
-
-            // ANSWER TO LIFE THE UNIVERSE AND EVERYTHING
-            if (i == 42) {
-                break;
-            }
-
-            out.print(i+delimiter);
+        if (!s.hasNext()) {
+            return;
         }
 
+        int inputSize = s.nextInt();
+        int biggestInputedNumber = -1;
+
+        // INPUT READ AND DETECT MAX VALUE
+        inputSet = new int[inputSize];
+        for (int i = 0; i < inputSize; i++) {
+            int inputedNumber = s.nextInt();
+
+            if (inputedNumber > biggestInputedNumber) {
+                biggestInputedNumber = inputedNumber;
+            }
+
+            inputSet[i] = inputedNumber;
+        }
+
+        // THEN WE'LL RESOLVE Z FOR biggestInputedNumber
+        z(biggestInputedNumber);
+
+        // PRINT THE RESULTS
+        for (int x : inputSet) {
+            out.print(cache[x]+delimiter);
+        }
+
+        // CLEANUP
         if (in != System.in) {
             s.close(); // this also closes then 'in' parameter
         }
@@ -89,22 +106,36 @@ class Fctrl implements BiConsumer<InputStream, PrintStream> {
         }
     }
 
-    BigDecimal factorial(int i) {
-        return factorial(new BigDecimal(i));
-    }
+    int factorsOfFive(int n) {
+        int result = 0;
 
-    BigDecimal factorial(long i) {
-        return factorial(new BigDecimal(i));
-    }
-
-    BigDecimal factorial(BigDecimal i) {
-        if (memo.contains(i)) {
-            return memo.get(i);
+        // here is the magic...
+        for (int powerOfFive = 1; n % Math.pow(5, powerOfFive) == 0; powerOfFive++) {
+            result++;
         }
 
-        BigDecimal fctrl = i.multiply(factorial(i.subtract(BigDecimal.ONE)));
-        memo.put(i, fctrl);
+        return result;
+    }
 
-        return fctrl;
+    /**
+     * Memoization
+     * @param n
+     */
+    public int z(int n) {
+        // INIT THE CACHE
+        cache = new int[n+1];
+
+        if (n < 5) {
+            return 0; // already solved
+        }
+
+        for (int i = 5; i <= n; i++) {
+            int aux = cache[i-1] + factorsOfFive(i);
+
+            // AND THEN, CACHE IT
+            cache[i] = aux;
+        }
+
+        return cache[n];
     }
 }
