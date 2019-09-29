@@ -41,11 +41,9 @@ import java.util.function.BiConsumer;
 class Fctrl implements BiConsumer<InputStream, PrintStream> {
     private final String delimiter;
     private final int[] powersOf5 = new int[13]; // 5^12 <= 1000000000 <= 5^13
-    private final int cacheSize = 100_000_000; // ~100MB
 
-//    private int[] inputSet;
-    private Map<Integer,Integer> inputMap = new LinkedHashMap<>();
-    private int[] cache;
+    private int previousN = 4;
+    private int previousZ = 0;
 
     public static void main(String[] args) {
         new Fctrl(System.lineSeparator()).accept(System.in, System.out);
@@ -67,15 +65,16 @@ class Fctrl implements BiConsumer<InputStream, PrintStream> {
     }
     /**
      * The actual implementation. Three Loops:
-     *  - The first one fills the input set, and detect the biggestInputedNumber value;
-     *  - The second will resolve Z for the biggestInputedNumber value (and cache the intermediary results);
-     *  - The third one, will iterate through the input set to print the results ;
+     *  - The first one fills the input set;
+     *  - After sorting the input set, the second will resolve Z for the sorted copy;
+     *  - The third one, will iterate through the input set to print the results;
      *
      * @param in Example: <pre>6 3 60 100 1024 23456 8735373</pre>
      * @param out Example: <pre>0 14 24 253 5861 2183837</pre>
      */
     @Override
     public void accept(InputStream in, PrintStream out) {
+        Map<Integer,Integer> resultMap = new HashMap<>();
         final Scanner s = new Scanner(in);
 
         if (!s.hasNext()) {
@@ -83,36 +82,26 @@ class Fctrl implements BiConsumer<InputStream, PrintStream> {
         }
 
         int inputSize = s.nextInt();
-        int biggestInputedNumber = -1;
 
-        // INPUT READ AND DETECT MAX VALUE
-//        inputSet = new int[inputSize];
+        // INPUT READ
+        int[] inputSet = new int[inputSize];
         for (int i = 0; i < inputSize; i++) {
-            int inputedNumber = s.nextInt();
-
-            if (inputedNumber > biggestInputedNumber) {
-                biggestInputedNumber = inputedNumber;
-            }
-
-//            inputSet[i] = inputedNumber;
-
-            if (inputedNumber < 5) {
-                inputMap.put(inputedNumber,0); // IMPROV
-            } else {
-                inputMap.put(inputedNumber,null);
-            }
+            inputSet[i] = s.nextInt();
         }
 
-        // THEN WE'LL RESOLVE Z FOR biggestInputedNumber
-        z(biggestInputedNumber);
+        // SORTING INPUT SET
+        int[] aux = Arrays.copyOf(inputSet, inputSize);
+        Arrays.sort(aux);
+//        Arrays.parallelSort(aux);
 
-        // PRINT THE RESULTS
-//        for (int x : inputSet) {
-//            out.print(cache[x]+delimiter);
-//        }
+        // SOLVING N IN AN ORDERLY FASHION
+        for (int n : aux) {
+            resultMap.put(n, z(n));
+        }
 
-        for (int x : inputMap.values()) {
-            out.print(x+delimiter);
+        // OUTPUT RESULT
+        for (int n : inputSet) {
+            out.print(resultMap.get(n)+delimiter);
         }
 
         // CLEANUP
@@ -125,6 +114,11 @@ class Fctrl implements BiConsumer<InputStream, PrintStream> {
         }
     }
 
+    /**
+     * Calculate how many factors of five N have (optimized version).
+     * @param n the n! wich we will calculate Z
+     * @return x from 5^x
+     */
     int factorsOfFive(int n) {
         if (n == 1) {
             return 0;
@@ -146,6 +140,12 @@ class Fctrl implements BiConsumer<InputStream, PrintStream> {
         return 0;
     }
 
+    /**
+     * Calculate how many factors of five N have (naive version).
+     * @param n the n! wich we will calculate Z
+     * @return x from 5^x
+     */
+    @SuppressWarnings("unused")
     int factorsOfFiveNaive(int n) {
         int result = 0;
 
@@ -157,31 +157,23 @@ class Fctrl implements BiConsumer<InputStream, PrintStream> {
         return result;
     }
 
-
     /**
-     * Memoization
-     * @param n
+     * Calculate Z and memoize it (in the field - no tail-end optimization for java :/)
+     * @param n the n! wich we will calculate Z
      */
-    public int z(int n) {
-        // INIT THE CACHE
-        cache = new int[cacheSize+1];
+    int z(int n) {
+        int actualZ = previousZ;
 
-        if (n < 5) {
-            return 0; // already solved
-        }
-
-        for (int i = 5; i <= n; i++) {
-            int aux = cache[(i-1)%cacheSize] + factorsOfFive(i);
+        for (int i = previousN+1; i <= n; i++) {
+            if (i % 5 == 0) {
+                actualZ += factorsOfFive(i);
+            }
 
             // AND THEN, CACHE IT
-            cache[i%cacheSize] = aux;
-
-            // SAVE IT
-            if (inputMap.containsKey(i)) {
-                inputMap.put(i,aux);
-            }
+            previousN = i;
+            previousZ = actualZ;
         }
 
-        return cache[n%cacheSize];
+        return actualZ;
     }
 }
