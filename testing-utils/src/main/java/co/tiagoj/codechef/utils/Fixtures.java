@@ -64,6 +64,7 @@ public final class Fixtures {
             output = new String(baos.toByteArray(), StandardCharsets.UTF_8);
         } catch (Exception e) {
             // do nothing
+            e.printStackTrace();
         }
 
         return output;

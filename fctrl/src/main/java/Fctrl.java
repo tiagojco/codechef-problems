@@ -39,15 +39,18 @@ import java.util.function.BiConsumer;
  *
  */
 class Fctrl implements BiConsumer<InputStream, PrintStream> {
-
-    private int[] inputSet;
-//    private Map<Integer,Integer> inputSet = new LinkedHashMap<>();
-    private int[] cache;
     private final String delimiter;
+    private final int[] powersOf5 = new int[13]; // 5^12 <= 1000000000 <= 5^13
+    private final int cacheSize = 100_000_000; // ~100MB
+
+//    private int[] inputSet;
+    private Map<Integer,Integer> inputMap = new LinkedHashMap<>();
+    private int[] cache;
 
     public static void main(String[] args) {
         new Fctrl(System.lineSeparator()).accept(System.in, System.out);
     }
+
 
     /**
      *
@@ -55,6 +58,12 @@ class Fctrl implements BiConsumer<InputStream, PrintStream> {
      */
     Fctrl(String delimiter) {
         this.delimiter = delimiter;
+
+        // FILL THE POWERS OF FIVE
+        powersOf5[0] = 1;
+        for (int i = 1; i < powersOf5.length; i++) {
+            powersOf5[i] = powersOf5[i-1] * 5;
+        }
     }
     /**
      * The actual implementation. Three Loops:
@@ -77,7 +86,7 @@ class Fctrl implements BiConsumer<InputStream, PrintStream> {
         int biggestInputedNumber = -1;
 
         // INPUT READ AND DETECT MAX VALUE
-        inputSet = new int[inputSize];
+//        inputSet = new int[inputSize];
         for (int i = 0; i < inputSize; i++) {
             int inputedNumber = s.nextInt();
 
@@ -85,15 +94,25 @@ class Fctrl implements BiConsumer<InputStream, PrintStream> {
                 biggestInputedNumber = inputedNumber;
             }
 
-            inputSet[i] = inputedNumber;
+//            inputSet[i] = inputedNumber;
+
+            if (inputedNumber < 5) {
+                inputMap.put(inputedNumber,0); // IMPROV
+            } else {
+                inputMap.put(inputedNumber,null);
+            }
         }
 
         // THEN WE'LL RESOLVE Z FOR biggestInputedNumber
         z(biggestInputedNumber);
 
         // PRINT THE RESULTS
-        for (int x : inputSet) {
-            out.print(cache[x]+delimiter);
+//        for (int x : inputSet) {
+//            out.print(cache[x]+delimiter);
+//        }
+
+        for (int x : inputMap.values()) {
+            out.print(x+delimiter);
         }
 
         // CLEANUP
@@ -107,6 +126,27 @@ class Fctrl implements BiConsumer<InputStream, PrintStream> {
     }
 
     int factorsOfFive(int n) {
+        if (n == 1) {
+            return 0;
+        }
+
+        int i = powersOf5.length;
+
+        while (i > 1 && powersOf5[i-1] > n) {
+            i--;
+        }
+
+        while (i > 1) {
+            if (n % powersOf5[i-1] == 0) {
+                return i-1;
+            }
+            i--;
+        }
+
+        return 0;
+    }
+
+    int factorsOfFiveNaive(int n) {
         int result = 0;
 
         // here is the magic...
@@ -117,25 +157,31 @@ class Fctrl implements BiConsumer<InputStream, PrintStream> {
         return result;
     }
 
+
     /**
      * Memoization
      * @param n
      */
     public int z(int n) {
         // INIT THE CACHE
-        cache = new int[n+1];
+        cache = new int[cacheSize+1];
 
         if (n < 5) {
             return 0; // already solved
         }
 
         for (int i = 5; i <= n; i++) {
-            int aux = cache[i-1] + factorsOfFive(i);
+            int aux = cache[(i-1)%cacheSize] + factorsOfFive(i);
 
             // AND THEN, CACHE IT
-            cache[i] = aux;
+            cache[i%cacheSize] = aux;
+
+            // SAVE IT
+            if (inputMap.containsKey(i)) {
+                inputMap.put(i,aux);
+            }
         }
 
-        return cache[n];
+        return cache[n%cacheSize];
     }
 }

@@ -30,9 +30,9 @@ public class FctrlTest {
 
 
     @org.junit.Test
-    public void acceptTest100000000() {
-        final String inputString = generateFixture("1 100000000");
-        final String expectedOutputString = generateFixture("24999999");
+    public void acceptTest1000000000() {
+        final String inputString = generateFixture("1 1000000000");
+        final String expectedOutputString = generateFixture("249999998");
         assertEquals("Exemplo do problema", expectedOutputString, prepareAndConsume(inputString, LINE_SEPARATOR, fctrl));
     }
 
@@ -43,7 +43,7 @@ public class FctrlTest {
         assertEquals("Input em branco", expectedOutputString, prepareAndConsume(inputString, LINE_SEPARATOR,fctrl));
     }
 
-//    @org.junit.Test
+    @org.junit.Test
     public void acceptStressTempoLimite() throws IOException, URISyntaxException {
         final String inputString = readFixture("fixture.50000K.txt"); // 50.000 Bytes
 
@@ -53,7 +53,7 @@ public class FctrlTest {
 
         // 8 segundos
         final long elapsedTime = end - start;
-        assertTrue("Tempo limite < 8 segundos estourado: " + elapsedTime/1000, elapsedTime <= 8*1000);
+        assertTrue("Tempo limite < 16 segundos estourado: " + elapsedTime/1000, elapsedTime <= 16*1000);
 
         // Saida esperada
 //        final String expectedOutputString = readFixture("fixture.50000K-output.txt");
@@ -72,6 +72,12 @@ public class FctrlTest {
         assertEquals("8: 2^3 => 0", 0 , fctrl.factorsOfFive(8));
         assertEquals("9: 3^2 => 0", 0 , fctrl.factorsOfFive(9));
         assertEquals("10: 2^1 * 5^1 => 1", 1 , fctrl.factorsOfFive(10));
+        assertEquals("25: 5^1 => 2", 2 , fctrl.factorsOfFive(25));
+        assertEquals("10: 2^2 * 5^2 => 2", 2 , fctrl.factorsOfFive(100));
+        assertEquals("125: 5^3 => 3", 3 , fctrl.factorsOfFive(125));
+        assertEquals("625: 5^4 => 4", 4 , fctrl.factorsOfFive(625));
+        assertEquals("244140625: 5^12 => 12", 12 , fctrl.factorsOfFive(244140625));
+        assertEquals("244140626: ? => ?", 0 , fctrl.factorsOfFive(244140626));
     }
 
     @org.junit.Test
